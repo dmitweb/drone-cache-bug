@@ -1,0 +1,49 @@
+kind: pipeline
+platform:
+  os: linux
+  arch: amd64
+name: clone
+steps:
+  - name: copy
+    image: alpine
+    commands:
+      - cp yarn.lock .yarn.lock
+  - name: restore
+    image: meltwater/drone-cache
+    settings:
+      backend: filesystem
+      restore: true
+      mount:
+        - node_modules
+        - packages/test/node_modules
+        - yarn.lock
+    volumes:
+      - name: test
+        path: /tmp/cache/
+  - name: md5
+    image: node:12.13.1-alpine3.10
+    commands:
+      # echo md5sum of original file
+      - md5sum .yarn.lock
+      # echo md5sum of restored file
+      - md5sum yarn.lock
+      - yarn install --production
+      # echo md5sum of changed file
+      - md5sum yarn.lock
+      - yarn install --production
+  - name: rebuild
+    image: meltwater/drone-cache
+    settings:
+      backend: filesystem
+      rebuild: true
+      mount:
+        - node_modules
+        - packages/test/node_modules
+        - yarn.lock
+    volumes:
+      - name: test
+        path: /tmp/cache/
+volumes:
+  - name: test
+    host:
+      path: /root/test/

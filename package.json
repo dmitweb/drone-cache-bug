@@ -1,0 +1,13 @@
+{
+    "name": "test",
+    "private": true,
+    "workspaces": {
+        "packages": [
+            "packages/*"
+        ]
+    },
+    "dependencies": {
+        "@material-ui/core": "4.8.2",
+        "react": "16.12.0"
+    }
+}
