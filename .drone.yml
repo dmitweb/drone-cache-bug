@@ -9,10 +9,11 @@ steps:
     commands:
       - cp yarn.lock .yarn.lock
   - name: restore
-    image: meltwater/drone-cache
+    image: meltwater/drone-cache:master-718e540
     settings:
       backend: filesystem
       restore: true
+      # cache_key: '{{ checksum "yarn.lock" }}'
       mount:
         - node_modules
         - packages/test/node_modules
@@ -31,11 +32,14 @@ steps:
       # echo md5sum of changed file
       - md5sum yarn.lock
       - yarn install --production
+      # there wasn't a packages/test/node_modules created, I don't know why?
+      - test -d "packages/test/node_modules" && echo 'Directory packages/test/node_modules found.' || (echo 'Directory packages/test/node_modules not found.' && cp -R node_modules packages/test/node_modules)
   - name: rebuild
-    image: meltwater/drone-cache
+    image: meltwater/drone-cache:master-718e540
     settings:
       backend: filesystem
       rebuild: true
+      # cache_key: '{{ checksum "yarn.lock" }}'
       mount:
         - node_modules
         - packages/test/node_modules
